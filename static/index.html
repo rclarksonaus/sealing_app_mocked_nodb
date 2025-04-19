@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Material Recommendation</title>
+</head>
+<body>
+  <h2>Sealing Material Recommendation</h2>
+  <form id="form">
+    <label>Temperature (℃): <input type="number" name="temp_c" /></label><br />
+    <label>Pressure (bar): <input type="number" name="pressure_bar" /></label><br />
+    <label>Media Type: <input type="text" name="media_type" /></label><br />
+    <label>Movement Type: 
+      <select name="movement_type">
+        <option value="rotary">Rotary</option>
+        <option value="linear">Linear</option>
+      </select>
+    </label><br />
+    <label>Space Constraint: 
+      <select name="space_constraint">
+        <option value="narrow">Narrow</option>
+        <option value="standard">Standard</option>
+      </select>
+    </label><br />
+    <button type="submit">Submit</button>
+  </form>
+  <div id="result"></div>
+
+  <script>
+    document.getElementById("form").onsubmit = async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const payload = Object.fromEntries(formData.entries());
+      payload.temp_c = parseFloat(payload.temp_c);
+      payload.pressure_bar = parseFloat(payload.pressure_bar);
+
+      const res = await fetch("/recommend/score", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      const container = document.getElementById("result");
+      container.innerHTML = `<h3>Top Recommendations:</h3>` + data.results.map(r =>
+        `<div>Grade ${r.grade_id}: ${r.score} - ${r.reason}</div>`
+      ).join("");
+    };
+  </script>
+</body>
+</html>
